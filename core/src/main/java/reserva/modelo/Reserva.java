@@ -29,6 +29,9 @@ public class Reserva {
         if (fecha == null) {
             throw new InvalidReservaException("La fecha es obligatoria");
         }
+        if (fecha.isBefore(LocalDate.now())) {
+            throw new InvalidReservaException("La fecha no puede ser pasada");
+        }
         if (emailContacto == null || emailContacto.isBlank()) {
             throw new InvalidReservaException("El email de contacto es obligatorio");
         }
