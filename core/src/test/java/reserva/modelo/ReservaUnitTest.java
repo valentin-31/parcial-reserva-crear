@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Restricciones del enunciado y test que las cubre:
  * - id obligatorio                      -> instance_idNull_throws...
  * - fecha obligatoria                   -> instance_fechaNull_throws...
+ * - fecha no puede ser pasada (propia)  -> instance_fechaPasada_throws... / instance_fechaHoy_...
  * - email obligatorio y no vacío        -> instance_emailNull/Vacio/SoloEspacios_throws...
  * - cantidadPersonas mayor que cero     -> instance_cantidadPersonasCero/Negativa_throws...
  * - reserva nueva comienza ACTIVA       -> instance_datosValidos_...
@@ -24,7 +25,7 @@ public class ReservaUnitTest {
 
     private static final UUID ID_VALIDO = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
     private static final String EMAIL_VALIDO = "cliente@correo.com";
-    private static final LocalDate FECHA_VALIDA = LocalDate.of(2030, 1, 15);
+    private static final LocalDate FECHA_VALIDA = LocalDate.now().plusYears(1);
     private static final int CANTIDAD_VALIDA = 4;
 
     // Probamos que con todos los datos válidos se crea la reserva, con sus getters y estado ACTIVA
@@ -64,6 +65,30 @@ public class ReservaUnitTest {
         // Act + Assert
         assertThrows(InvalidReservaException.class,
                 () -> Reserva.instance(ID_VALIDO, EMAIL_VALIDO, fecha, CANTIDAD_VALIDA));
+    }
+
+    // Probamos que una fecha pasada (ayer) lanza la excepción de reserva inválida
+    @Test
+    void instance_fechaPasada_throwsInvalidReservaException() {
+        // Arrange
+        LocalDate ayer = LocalDate.now().minusDays(1);
+
+        // Act + Assert
+        assertThrows(InvalidReservaException.class,
+                () -> Reserva.instance(ID_VALIDO, EMAIL_VALIDO, ayer, CANTIDAD_VALIDA));
+    }
+
+    // Probamos el borde válido: una reserva para hoy se crea
+    @Test
+    void instance_fechaHoy_creaReserva() {
+        // Arrange
+        LocalDate hoy = LocalDate.now();
+
+        // Act
+        Reserva reserva = Reserva.instance(ID_VALIDO, EMAIL_VALIDO, hoy, CANTIDAD_VALIDA);
+
+        // Assert
+        assertEquals(hoy, reserva.getFecha());
     }
 
     // Probamos que un email null lanza la excepción de reserva inválida
